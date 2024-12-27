@@ -8,12 +8,6 @@ import { useState } from 'react';
 
 export default function Home() {
   const [recording, setRecording] = useState(false);
-  // const { View, play, stop } = useLottie({
-  //   animationData: animationMicro,
-  //   loop: true,
-  //   autoplay: false,
-  //   style: { width: 170, height: 170 },
-  // });
   const handleClick = () => {
     if (!recording) {
       setRecording(true);
