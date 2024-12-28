@@ -1,9 +1,7 @@
 import Link from 'next/link';
 import React from 'react';
 
-export interface NavBarProps {}
-
-const NavBar = ({}: NavBarProps) => {
+const NavBar = () => {
   return (
     <div className="w-[294px] h-[33px] bg-nav-background rounded-md flex p-[2px] gap-[2px] mx-auto my-[130px] text-xs text-center leading-7">
       <Link
