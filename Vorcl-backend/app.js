@@ -1,18 +1,15 @@
-"use strict";
+import Fastify from "fastify";
+import fastifyWebsocket from "@fastify/websocket";
+import webSocket from "./routes/websocket.js";
+export const options = {};
+import dotenv from "dotenv";
 
-const path = require("node:path");
-const AutoLoad = require("@fastify/autoload");
-const options = {};
+dotenv.config();
 
-module.exports = async function (fastify, opts) {
-  fastify.register(AutoLoad, {
-    dir: path.join(__dirname, "plugins"),
-    options: Object.assign({}, opts),
-  });
-  fastify.register(AutoLoad, {
-    dir: path.join(__dirname, "routes"),
-    options: Object.assign({}, opts),
-  });
-};
+const fastify = Fastify({ logger: true });
 
-module.exports.options = options;
+const PORT = process.env.PORT || 3000;
+
+fastify.register(fastifyWebsocket);
+fastify.register(webSocket);
+fastify.listen({ port: PORT });
