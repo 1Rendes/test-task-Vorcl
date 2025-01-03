@@ -9,13 +9,12 @@ import { useEffect, useState } from 'react';
 const Audio = () => {
   const [recording, setRecording] = useState(false);
   const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
-  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(
-    null,
-  );
+  const [socket, setSocket] = useState<WebSocket | null>(null);
 
   useEffect(() => {
     const webSocketUrl = 'ws:localhost:3001/ws';
     const webSocket = new WebSocket(webSocketUrl);
+    setSocket(webSocket);
 
     webSocket.onopen = () => {
       console.log('WebSocket is opened.');
@@ -35,11 +34,11 @@ const Audio = () => {
       }
     };
   }, []);
+
   const handleClick = async () => {
     if (recording && mediaStream) {
       mediaStream.getTracks().forEach((track) => track.stop());
       setMediaStream(null);
-      setMediaRecorder(null);
       setRecording(false);
       console.log('Microphone recording stopped');
     } else {
@@ -48,17 +47,26 @@ const Audio = () => {
           audio: true,
         });
         setMediaStream(stream);
+        const options = {
+          audioBitsPerSecond: 48000,
+          mimeType: 'audio/webm; codecs=opus',
+        };
+        const recorder = new MediaRecorder(stream, options);
         setRecording(true);
-        const recorder = new MediaRecorder(stream);
-        setMediaRecorder(recorder);
-        recorder.start(1000);
-        recorder.ondataavailable = async (event) => {};
+        recorder.start();
+        recorder.ondataavailable = async (event) => {
+          if (socket) {
+            console.log(await event.data.arrayBuffer());
+            socket.send(await event.data.arrayBuffer());
+          }
+        };
       } catch (error) {
         console.error('No permission to microphone, ', error);
         setRecording(false);
       }
     }
   };
+
   return (
     <div className="bg-audio-background rounded-[24px] m-auto flex flex-col pt-[20px] w-[552px] h-[313px]">
       <div className=" flex justify-center items-center text-white text-xs h-[100]">
