@@ -17,6 +17,7 @@
     "@fastify/sensible": "^6.0.0",
     "@fastify/websocket": "^11.0.1",
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
+    "axios": "^1.7.9",
     "blob-to-buffer": "^1.2.9",
     "buffer": "^6.0.3",
     "dotenv": "^16.4.7",
