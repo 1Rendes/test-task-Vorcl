@@ -3,36 +3,19 @@ import { Visualizer } from 'react-sound-visualizer';
 import blueMicro from '../../../assets/blue-micro.json';
 import redMicro from '../../../assets/red-micro.json';
 import { Player } from '@lottiefiles/react-lottie-player';
-
+import axios from 'axios';
 import { useEffect, useState } from 'react';
 
 const Audio = () => {
   const [recording, setRecording] = useState(false);
   const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
-  const [socket, setSocket] = useState<WebSocket | null>(null);
 
   useEffect(() => {
-    const webSocketUrl = 'ws:localhost:3001/ws';
-    const webSocket = new WebSocket(webSocketUrl);
-    setSocket(webSocket);
-
-    webSocket.onopen = () => {
-      console.log('WebSocket is opened.');
+    const getApiKey = async () => {
+      const { data } = await axios.get('http://localhost:3001/webrtc');
+      console.log(data);
     };
-    webSocket.onerror = (error) => {
-      console.log(error);
-    };
-    webSocket.onclose = () => {
-      console.log('WebSocket is closed.');
-    };
-    webSocket.onmessage = (event) => {
-      console.log(event);
-    };
-    return () => {
-      if (webSocket.readyState !== WebSocket.CLOSED) {
-        webSocket.close();
-      }
-    };
+    getApiKey();
   }, []);
 
   const handleClick = async () => {
@@ -54,12 +37,7 @@ const Audio = () => {
         const recorder = new MediaRecorder(stream, options);
         setRecording(true);
         recorder.start();
-        recorder.ondataavailable = async (event) => {
-          if (socket) {
-            console.log(await event.data.arrayBuffer());
-            socket.send(await event.data.arrayBuffer());
-          }
-        };
+        recorder.ondataavailable = async (event) => {};
       } catch (error) {
         console.error('No permission to microphone, ', error);
         setRecording(false);
