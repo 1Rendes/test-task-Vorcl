@@ -8,8 +8,8 @@ const webSocket = async (fastify, opts) => {
   function handleWebSocket(clientSocket) {
     const connection = new OpenAI();
     connection.connect(clientSocket);
-    clientSocket.on("message", async (data) => {
-      console.log(data);
+    clientSocket.on("message", async (blob) => {
+      connection.send(blob);
     });
     clientSocket.on("close", () => {
       console.log("Client WebSocket disconnected.");

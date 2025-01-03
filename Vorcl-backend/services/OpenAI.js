@@ -1,5 +1,6 @@
 import { WebSocket } from "ws";
 import fastifyWebSocket from "@fastify/websocket";
+import { extractAudioChannelData } from "./audio.js";
 
 export class OpenAI {
   constructor() {
@@ -67,9 +68,24 @@ export class OpenAI {
       );
     }
   }
-  send(message) {
-    this.serverSocket.send(this.inputAppend(message));
-    this.serverSocket.send(this.inputCommit());
+  send(blob) {
+    const int16Array = extractAudioChannelData(blob);
+    // const messageObject = {
+    //   type: "conversation.item.create",
+    //   item: {
+    //     type: "message",
+    //     role: "user",
+    //     content: [
+    //       {
+    //         type: "input_audio",
+    //         audio: int16Array.toString("base64"),
+    //       },
+    //     ],
+    //   },
+    // };
+    // this.serverSocket.send(JSON.stringify(messageObject));
+    // this.serverSocket.send(this.inputAppend(message));
+    // this.serverSocket.send(this.inputCommit());
   }
   onError(error) {
     console.error("OpenAI WebSocket error:", error);
