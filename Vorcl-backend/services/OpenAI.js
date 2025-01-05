@@ -17,7 +17,8 @@ export class OpenAI {
       type: "session.update",
       session: {
         modalities: ["text"],
-        instructions: "You are a helpful assistant.",
+        instructions:
+          "You are a helpful assistant. Use initialy ukrainian language to answer. ",
         input_audio_format: "pcm16",
         max_response_output_tokens: 1024,
       },
@@ -62,30 +63,37 @@ export class OpenAI {
   onMessage(e) {
     const serverEvent = JSON.parse(e);
     console.log("Response from OpenAI:", serverEvent);
-    if (serverEvent.type === "response.done") {
-      this.clientSocket.send(
-        JSON.stringify(serverEvent.response.output[0].content[0].text)
-      );
+    if (serverEvent.response?.status === "failed")
+      console.log("Error:", serverEvent.response.status_details);
+
+    switch (serverEvent.type) {
+      case "response.text.delta":
+        this.clientSocket.send(JSON.stringify(serverEvent.delta));
+        return;
+      case "response.done":
+        if (serverEvent.response.status === "cancelled") return;
+        if (serverEvent.response.status === "failed") {
+          this.clientSocket.send(
+            JSON.stringify(serverEvent.response.status_details.error.message)
+          );
+        } else {
+          this.clientSocket.send("response.done");
+          this.clientSocket.send(
+            JSON.stringify(serverEvent.response.output[0].content[0].text)
+          );
+        }
+        return;
+      default:
+        break;
+    }
+    if (serverEvent.type === "response.text.delta") {
     }
   }
-  send(blob) {
-    const int16Array = extractAudioChannelData(blob);
-    // const messageObject = {
-    //   type: "conversation.item.create",
-    //   item: {
-    //     type: "message",
-    //     role: "user",
-    //     content: [
-    //       {
-    //         type: "input_audio",
-    //         audio: int16Array.toString("base64"),
-    //       },
-    //     ],
-    //   },
-    // };
-    // this.serverSocket.send(JSON.stringify(messageObject));
-    // this.serverSocket.send(this.inputAppend(message));
-    // this.serverSocket.send(this.inputCommit());
+  async send(blob) {
+    let pcm16audio;
+    await extractAudioChannelData(blob).then((data) => (pcm16audio = data));
+    this.serverSocket.send(this.inputAppend(pcm16audio.toString("base64")));
+    this.serverSocket.send(this.inputCommit());
   }
   onError(error) {
     console.error("OpenAI WebSocket error:", error);
