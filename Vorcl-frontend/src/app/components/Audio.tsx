@@ -10,6 +10,10 @@ const Audio = () => {
   const [recording, setRecording] = useState(false);
   const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
   const [socket, setSocket] = useState<WebSocket | null>(null);
+  const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
+  const [answer, setAnswer] = useState('');
+  const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
+  const [analyser, setAnalyser] = useState<AnalyserNode | null>(null);
 
   useEffect(() => {
     const webSocketUrl = 'ws:localhost:3001/ws';
@@ -26,7 +30,11 @@ const Audio = () => {
       console.log('WebSocket is closed.');
     };
     webSocket.onmessage = (event) => {
-      console.log(event);
+      if (event.data === 'response.done') setAnswer('');
+      else {
+        const text = JSON.parse(event.data);
+        setAnswer((prev) => prev + text);
+      }
     };
     return () => {
       if (webSocket.readyState !== WebSocket.CLOSED) {
@@ -36,10 +44,14 @@ const Audio = () => {
   }, []);
 
   const handleClick = async () => {
-    if (recording && mediaStream) {
+    if (recording && mediaStream && audioContext && intervalId && analyser) {
       mediaStream.getTracks().forEach((track) => track.stop());
       setMediaStream(null);
       setRecording(false);
+      audioContext.close();
+      analyser.disconnect();
+      clearInterval(intervalId);
+
       console.log('Microphone recording stopped');
     } else {
       try {
@@ -47,13 +59,49 @@ const Audio = () => {
           audio: true,
         });
         setMediaStream(stream);
-        const options = {
-          audioBitsPerSecond: 48000,
-          mimeType: 'audio/webm; codecs=opus',
-        };
-        const recorder = new MediaRecorder(stream, options);
         setRecording(true);
-        recorder.start();
+        const recorder = new MediaRecorder(stream);
+        const audioContext = new AudioContext();
+        setAudioContext(audioContext);
+        const source = audioContext.createMediaStreamSource(stream);
+        const analyser = audioContext.createAnalyser();
+        setAnalyser(analyser);
+
+        analyser.fftSize = 256;
+        const dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+        source.connect(analyser);
+        const silenceDurationThreshold = 1000;
+        let silenceStart = 0;
+
+        function checkForSilence() {
+          analyser.getByteTimeDomainData(dataArray);
+          const rms = Math.sqrt(
+            dataArray.reduce(
+              (sum, value) => sum + Math.pow(value - 128, 2),
+              0,
+            ) / dataArray.length,
+          );
+
+          if (rms < 5) {
+            if (silenceStart === 0) {
+              silenceStart = Date.now();
+            } else if (Date.now() - silenceStart >= silenceDurationThreshold) {
+              recorder.stop();
+              silenceStart = 0;
+            }
+          } else {
+            silenceStart = 0;
+            if (recorder.state === 'inactive') {
+              recorder.start();
+            }
+          }
+        }
+        const intervalId = setInterval(() => {
+          requestAnimationFrame(checkForSilence);
+        }, 200);
+        setIntervalId(intervalId);
+
         recorder.ondataavailable = async (event) => {
           if (socket) {
             console.log(await event.data.arrayBuffer());
@@ -68,7 +116,7 @@ const Audio = () => {
   };
 
   return (
-    <div className="bg-audio-background rounded-[24px] m-auto flex flex-col pt-[20px] w-[552px] h-[313px]">
+    <div className="bg-audio-background rounded-[24px] m-auto mb-6 flex flex-col pt-[20px] w-[552px] h-auto">
       <div className=" flex justify-center items-center text-white text-xs h-[100]">
         {mediaStream ? (
           <Visualizer
@@ -86,6 +134,9 @@ const Audio = () => {
         ) : (
           'Start a conversation with assistants'
         )}
+      </div>
+      <div className="m-2 p-2 border-gray-100 border-solid text-white rounded-md">
+        {answer}
       </div>
       <button
         onClick={handleClick}
