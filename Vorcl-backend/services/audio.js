@@ -8,7 +8,6 @@ ffmpeg.setFfmpegPath(ffmpeg_inst.path);
 ffmpeg.setFfprobePath(ffprobe.path);
 
 export async function extractAudioChannelData(buffer) {
-  console.log(buffer);
   return new Promise((resolve) => {
     const readableStream = new Readable({
       read() {},
