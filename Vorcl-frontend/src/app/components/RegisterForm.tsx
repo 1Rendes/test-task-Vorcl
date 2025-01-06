@@ -5,6 +5,17 @@ import { Button } from '@nextui-org/button';
 import { Input } from '@nextui-org/input';
 import React from 'react';
 import * as Yup from 'yup';
+import axios from 'axios';
+
+const serverUrl = 'http://localhost:3000';
+export const instance = axios.create({
+  baseURL: serverUrl,
+});
+
+const handleSignUpForm = async (userData: { email: string }) => {
+  const { data } = await instance.post('/form', userData);
+  return data;
+};
 
 const RegisterForm = () => {
   const validationSchema = Yup.object().shape({
@@ -13,8 +24,12 @@ const RegisterForm = () => {
       .matches(/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/, 'Invalid email address')
       .required('Email is required!'),
   });
-  const handleSubmit = (values: { email: string }) => {
-    console.log(values);
+  const handleSubmit = (
+    values: { email: string },
+    actions: { resetForm: () => void },
+  ) => {
+    actions.resetForm();
+    handleSignUpForm(values);
   };
   const initialValues = { email: '' };
   return (
