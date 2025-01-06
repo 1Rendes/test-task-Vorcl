@@ -42,6 +42,11 @@ const RegisterForm = () => {
                   {...field}
                   type="email"
                   className="mb-[12px]"
+                  classNames={{
+                    inputWrapper: [
+                      'border-transparent border-2 focus-within:shadow-blue-500 focus-within:shadow-[0_0_0_2px] focus-within:border-black rounded-xl',
+                    ],
+                  }}
                   label="mail"
                   errorMessage={
                     meta.touched && meta.error ? meta.error : undefined
