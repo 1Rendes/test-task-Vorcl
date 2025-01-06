@@ -33,11 +33,11 @@ const Audio = () => {
       if (event.data === 'response.done') setAnswer('');
       else {
         const text = JSON.parse(event.data);
-        setAnswer((prev) => prev + text);
+        setAnswer((prevText) => prevText + text);
       }
     };
     return () => {
-      if (webSocket.readyState !== WebSocket.CLOSED) {
+      if (webSocket.readyState === WebSocket.OPEN) {
         webSocket.close();
       }
     };
@@ -72,10 +72,12 @@ const Audio = () => {
 
         source.connect(analyser);
         const silenceDurationThreshold = 1000;
-        let silenceStart = 0;
+        const intervalOfAnimationRequests = 200;
+        let timeOfSilenceStart = 0;
 
         function checkForSilence() {
           analyser.getByteTimeDomainData(dataArray);
+          const levelOfSilence = 5;
           const rms = Math.sqrt(
             dataArray.reduce(
               (sum, value) => sum + Math.pow(value - 128, 2),
@@ -83,15 +85,18 @@ const Audio = () => {
             ) / dataArray.length,
           );
 
-          if (rms < 5) {
-            if (silenceStart === 0) {
-              silenceStart = Date.now();
-            } else if (Date.now() - silenceStart >= silenceDurationThreshold) {
+          if (rms < levelOfSilence) {
+            if (timeOfSilenceStart === 0) {
+              timeOfSilenceStart = Date.now();
+            } else if (
+              Date.now() - timeOfSilenceStart >=
+              silenceDurationThreshold
+            ) {
               recorder.stop();
-              silenceStart = 0;
+              timeOfSilenceStart = 0;
             }
           } else {
-            silenceStart = 0;
+            timeOfSilenceStart = 0;
             if (recorder.state === 'inactive') {
               recorder.start();
             }
@@ -99,7 +104,7 @@ const Audio = () => {
         }
         const intervalId = setInterval(() => {
           requestAnimationFrame(checkForSilence);
-        }, 200);
+        }, intervalOfAnimationRequests);
         setIntervalId(intervalId);
 
         recorder.ondataavailable = async (event) => {
@@ -135,7 +140,7 @@ const Audio = () => {
           'Start a conversation with assistants'
         )}
       </div>
-      <div className="m-2 p-2 border-gray-100 border-solid text-white rounded-md">
+      <div className="mx-4 border-gray-100 border-solid text-white rounded-md">
         {answer}
       </div>
       <button
