@@ -17,19 +17,15 @@ export async function extractAudioChannelData(buffer) {
     const outputChunks = [];
 
     setImmediate(() => {
-      var ffcmd = ffmpeg(readableStream)
+      ffmpeg(readableStream)
         .noVideo()
         .audioChannels(1)
         .audioCodec("pcm_s16le")
         .audioFrequency(24000)
         .format("s16le")
-
-        .on("error", (err) => {
-          console.error("Ошибка:", err);
-        })
         .on("end", () => {
           const outputBuffer = Buffer.concat(outputChunks);
-          console.log("Преобразование завершено");
+          console.log("Encoding done.");
           if (outputBuffer) {
             resolve(outputBuffer);
           }
@@ -38,6 +34,9 @@ export async function extractAudioChannelData(buffer) {
         .on("data", function (chunk) {
           outputChunks.push(chunk);
           console.log("ffmpeg just wrote " + chunk.length + " bytes");
+        })
+        .on("error", (err) => {
+          console.error("Error:", err);
         });
     });
   });

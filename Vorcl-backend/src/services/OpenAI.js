@@ -86,8 +86,6 @@ export class OpenAI {
       default:
         break;
     }
-    if (serverEvent.type === "response.text.delta") {
-    }
   }
   async send(blob) {
     let pcm16audio;
