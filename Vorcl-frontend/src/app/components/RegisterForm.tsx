@@ -6,15 +6,21 @@ import { Input } from '@nextui-org/input';
 import React from 'react';
 import * as Yup from 'yup';
 import axios from 'axios';
+import toast from 'react-hot-toast';
 
-const serverUrl = 'http://localhost:3000';
+const serverUrl = 'http://localhost:3001';
 export const instance = axios.create({
   baseURL: serverUrl,
 });
 
 const handleSignUpForm = async (userData: { email: string }) => {
-  const { data } = await instance.post('/form', userData);
-  return data;
+  try {
+    const { data } = await instance.post('/register', userData);
+    toast.success(data.message);
+  } catch (error) {
+    const err = error as { response: { data: { message: string } } };
+    toast.error(err.response.data.message);
+  }
 };
 
 const RegisterForm = () => {
@@ -24,6 +30,7 @@ const RegisterForm = () => {
       .matches(/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/, 'Invalid email address')
       .required('Email is required!'),
   });
+
   const handleSubmit = (
     values: { email: string },
     actions: { resetForm: () => void },
@@ -31,6 +38,7 @@ const RegisterForm = () => {
     actions.resetForm();
     handleSignUpForm(values);
   };
+
   const initialValues = { email: '' };
   return (
     <div className="bg-audio-background rounded-[24px] m-auto mb-6 flex flex-col px-[32px] pt-[26px] pb-[40px] w-[384px] h-auto">
