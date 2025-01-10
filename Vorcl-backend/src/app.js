@@ -5,7 +5,7 @@ import webSocket from "./routes/websocket.js";
 export const options = {};
 import dotenv from "dotenv";
 import form from "./routes/form.js";
-import pino from "pino";
+import stock from "./routes/stock.js";
 
 dotenv.config();
 
@@ -29,6 +29,7 @@ const setupServer = async () => {
   fastify.register(fastifyWebsocket);
   fastify.register(webSocket);
   fastify.register(form);
+  fastify.register(stock);
   fastify.listen({ port: PORT });
 };
 

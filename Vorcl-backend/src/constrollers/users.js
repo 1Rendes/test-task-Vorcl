@@ -2,12 +2,12 @@ import { registerUser } from "../services/mongo.js";
 
 export const usersController = async (req, reply) => {
   const { email } = req.body;
-  if (!email) reply.status(201).send("email is required");
+  if (!email) reply.status(201).send("Email is required.");
   try {
     const user = await registerUser(email);
     reply.status(201).send({
       status: 201,
-      message: "user succesfully created.",
+      message: "User succesfully created.",
       data: user,
     });
   } catch ({ status, message }) {
