@@ -1,7 +1,8 @@
 import React from 'react';
+import Stock from '../components/Stock';
 
 const stock = () => {
-  return <div>stock</div>;
+  return <Stock />;
 };
 
 export default stock;
