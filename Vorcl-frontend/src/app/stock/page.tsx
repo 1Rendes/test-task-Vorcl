@@ -1,8 +1,8 @@
 import React from 'react';
-import Stock from '../components/Stock';
+import Stocks from '../components/Stocks';
 
 const stock = () => {
-  return <Stock />;
+  return <Stocks />;
 };
 
 export default stock;
