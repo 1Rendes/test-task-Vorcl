@@ -6,7 +6,14 @@ const getStocks = async (country, symbol, page) => {
   const skip = (page - 1) * documentsPerPage;
   const stocksQuery = StockCollection.find();
   if (country) stocksQuery.where("country").regex(new RegExp(country, "i"));
-  if (symbol) stocksQuery.where("symbol").regex(new RegExp(symbol, "i"));
+  {
+    stocksQuery.where({
+      $or: [
+        { symbol: { $regex: new RegExp(symbol, "i") } },
+        { name: { $regex: new RegExp(symbol, "i") } },
+      ],
+    });
+  }
   const stocksLength = await StockCollection.find()
     .merge(stocksQuery)
     .countDocuments();
