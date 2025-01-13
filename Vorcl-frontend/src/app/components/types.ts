@@ -1,4 +1,7 @@
+import { Dispatch, SetStateAction } from 'react';
+
 export type Stock = {
+  id: number;
   symbol: string;
   name: string;
   marketCap: number;
@@ -12,6 +15,8 @@ export interface TableComponentProps {
   stocks: Stock[];
   page: number;
   documentsPerPage: number;
+  totalPages: number;
+  setPage: Dispatch<SetStateAction<number>>;
 }
 
 type Data = {

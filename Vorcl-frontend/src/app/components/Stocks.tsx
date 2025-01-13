@@ -2,9 +2,19 @@
 
 import axios from 'axios';
 import { useDebounce } from '../hooks/useDebounce';
-import TableComponent from './TableComponent';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Response, Stock } from './types';
+import {
+  Table,
+  TableHeader,
+  TableColumn,
+  TableBody,
+  TableRow,
+  TableCell,
+  Pagination,
+  Input,
+  getKeyValue,
+} from '@nextui-org/react';
 
 const serverUrl = 'http://localhost:3001';
 export const instance = axios.create({
@@ -13,58 +23,151 @@ export const instance = axios.create({
 
 const Stocks = () => {
   const [stocks, setStocks] = useState<Stock[]>([]);
-  const [totalPages, setTotalPages] = useState<number>(0);
-  const [page, setPage] = useState<number>(0);
-  const [documentsPerPage, setDocumentsPerPage] = useState<number>(0);
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
+  const [totalPages, setTotalPages] = useState(0);
+  const [page, setPage] = useState(1);
+  const firstPage = 1;
+  const [documentsPerPage, setDocumentsPerPage] = useState(0);
+  const [countryFilter, setCountryFilter] = useState('');
+  const [symbolFilter, setSymbolFilter] = useState('');
+
+  const fetchStocks = async (country: string, symbol: string, page: number) => {
     const {
       data,
     }: {
       data: Response;
     } = await instance.get('/stock', {
       params: {
-        country: formData.get('country'),
-        symbol: formData.get('symbol'),
-        page: formData.get('page') || 1,
+        country,
+        symbol,
+        page: page || 1,
       },
     });
-    console.log(
-      'Submitted data:',
-      formData.get('country'),
-      formData.get('symbol'),
-      formData.get('page'),
-    );
     console.log(data);
+    console.log('page:', page);
+
     setStocks(data.data.stocks);
     setTotalPages(data.data.totalPages);
     setPage(data.data.page);
     setDocumentsPerPage(data.data.documentsPerPage);
     return;
   };
-  const debouncedSubmit = useDebounce((form: HTMLFormElement) => {
-    form.requestSubmit();
-  }, 1500);
 
-  const handleChangeAndSubmit = (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    const form = event.target.form;
-    if (form) debouncedSubmit(form);
+  const handlePageChange = async (page: number) => {
+    await fetchStocks(countryFilter, symbolFilter, page);
+    setPage(page);
   };
+
+  const handleCountryChange = (e: React.BaseSyntheticEvent) => {
+    debouncedFiltersChange(e);
+  };
+  const handleSymbolChange = (e: React.BaseSyntheticEvent) => {
+    debouncedFiltersChange(e);
+  };
+  const debouncedFiltersChange = useDebounce((e: React.BaseSyntheticEvent) => {
+    setPage(firstPage);
+    if (e.target.name === 'country') {
+      setCountryFilter(e.target.value);
+      fetchStocks(e.target.value, symbolFilter, firstPage);
+    } else {
+      setSymbolFilter(e.target.value);
+      fetchStocks(countryFilter, e.target.value, firstPage);
+    }
+  }, 1000);
+
+  useEffect(() => {
+    fetchStocks(countryFilter, symbolFilter, firstPage);
+  }, []);
+
+  const inputStyles = [
+    'px-[18px]',
+    'rounded-[12px]',
+    'text-[14px]',
+    'border-[2px] border-solid border-[#A1A1AA]',
+    'group-hover:bg-[#121212]',
+  ];
+
+  const headerColumns = [
+    { name: '#', uid: 'id' },
+    { name: 'Symbol', uid: 'symbol' },
+    { name: 'Name', uid: 'name' },
+    { name: 'Capitalization', uid: 'marketCap' },
+    { name: 'Price', uid: 'price' },
+    { name: 'Price change per day', uid: 'perDay' },
+    { name: 'Price change per month', uid: 'perMonth' },
+  ];
+  let stockId = 0;
+  let stockIndex = 0;
+
   return (
     <div>
-      <form onSubmit={handleSubmit}>
-        <input type="text" name="country" onChange={handleChangeAndSubmit} />
-        <input type="text" name="symbol" onChange={handleChangeAndSubmit} />
-        <input type="text" name="page" onChange={handleChangeAndSubmit} />
-      </form>
-      <TableComponent
-        page={page}
-        stocks={stocks}
-        documentsPerPage={documentsPerPage}
-      />
+      <Table
+        removeWrapper
+        selectionMode="single"
+        aria-label="stocksTable"
+        topContent={
+          <div className="flex flex-col gap-[27px] mx-[auto] w-[282px] mt-[60px] mb-[80px]">
+            <Input
+              placeholder="Enter your country"
+              onChange={handleCountryChange}
+              size="sm"
+              classNames={{
+                inputWrapper: inputStyles,
+              }}
+              name="country"
+            ></Input>
+            <Input
+              placeholder="Enter symbol or name"
+              onChange={handleSymbolChange}
+              size="sm"
+              classNames={{
+                inputWrapper: inputStyles,
+              }}
+              name="symbol"
+            ></Input>
+          </div>
+        }
+        bottomContent={
+          <div className="flex w-full justify-center ">
+            <Pagination
+              isCompact
+              showControls
+              showShadow
+              classNames={{ cursor: 'shadow-lg' }}
+              color="primary"
+              page={page ? firstPage : page}
+              total={totalPages}
+              onChange={handlePageChange}
+            />
+          </div>
+        }
+      >
+        <TableHeader columns={headerColumns}>
+          {(column) => (
+            <TableColumn
+              className="text-center text-white text-[14px] font-normal"
+              key={column.uid}
+            >
+              {column.name}
+            </TableColumn>
+          )}
+        </TableHeader>
+        <TableBody emptyContent={'No rows to display.'} items={stocks}>
+          {(item) => {
+            stockIndex++; //didn't find how to pull index from this method, created my own index
+            stockId = (page - 1) * documentsPerPage + stockIndex;
+            item.id = stockId;
+            return (
+              <TableRow key={item._id}>
+                {(columnKey) => (
+                  <TableCell className="text-center text-[14px]">
+                    {getKeyValue(item, columnKey)}
+                  </TableCell>
+                )}
+              </TableRow>
+            );
+          }}
+        </TableBody>
+      </Table>
     </div>
   );
 };

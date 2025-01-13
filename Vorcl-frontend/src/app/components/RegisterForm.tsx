@@ -41,7 +41,7 @@ const RegisterForm = () => {
 
   const initialValues = { email: '' };
   return (
-    <div className="bg-audio-background rounded-[24px] m-auto mb-6 flex flex-col px-[32px] pt-[26px] pb-[40px] w-[384px] h-auto">
+    <div className="bg-audio-background rounded-[24px] m-auto mt-[155px] mb-6 flex flex-col px-[32px] pt-[26px] pb-[40px] w-[384px] h-auto">
       <h2 className="text-white text-[20px] mb-[26px]">Sign Up</h2>
       <Formik
         onSubmit={handleSubmit}
@@ -64,10 +64,10 @@ const RegisterForm = () => {
                   isInvalid={!!meta.error && meta.touched}
                   {...field}
                   type="email"
-                  className="mb-[12px]"
+                  className="mb-[12px] "
                   classNames={{
                     inputWrapper: [
-                      'border-transparent border-2 focus-within:shadow-blue-500 focus-within:shadow-[0_0_0_2px] focus-within:border-black rounded-xl',
+                      'bg-[var(--formInputBackground)] border-transparent border-2 focus-within:shadow-blue-500 focus-within:shadow-[0_0_0_2px] focus-within:border-black rounded-xl',
                     ],
                   }}
                   label="mail"

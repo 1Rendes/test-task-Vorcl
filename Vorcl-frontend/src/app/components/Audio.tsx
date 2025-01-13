@@ -121,7 +121,7 @@ const Audio = () => {
   };
 
   return (
-    <div className="bg-audio-background rounded-[24px] m-auto mb-6 flex flex-col pt-[20px] w-[552px] h-auto">
+    <div className="bg-audio-background rounded-[24px] m-auto mt-[130px] mb-6 flex flex-col pt-[20px] w-[552px] h-auto">
       <div className=" flex justify-center items-center text-white text-xs h-[100]">
         {mediaStream ? (
           <Visualizer

@@ -3,5 +3,11 @@
 @tailwind utilities;
 
 body {
-  background-color: #121212;
+  background-color: var(--commonBackground);
+}
+
+:root {
+  --commonBackground: #121212;
+  --foreground: #171717;
+  --formInputBackground: #27272a;
 }

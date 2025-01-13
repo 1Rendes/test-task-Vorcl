@@ -11,11 +11,14 @@ export default {
   ],
   theme: {
     extend: {
+      boxShadow: {
+        lg: '0px 2px 25px 0px #0070F396',
+      },
       colors: {
         background: 'var(--background)',
         foreground: 'var(--foreground)',
         'nav-pink': '#FF6EFD',
-        'audio-background': '#171717',
+        'audio-background': 'var(--foreground)',
       },
       backgroundImage: {
         'nav-background': 'linear-gradient(90deg, #FF1CF7, #00F0FF)',
@@ -28,7 +31,12 @@ export default {
       defaultTheme: 'dark',
       themes: {
         dark: {
-          colors: { background: '#121212' },
+          colors: {
+            default: {
+              100: '#121212',
+            },
+            background: '#121212',
+          },
         },
       },
     }),
