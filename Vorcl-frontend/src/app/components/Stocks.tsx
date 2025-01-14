@@ -30,6 +30,8 @@ const Stocks = () => {
   const [countryFilter, setCountryFilter] = useState('');
   const [symbolFilter, setSymbolFilter] = useState('');
 
+  // console.log('page:', page);
+
   const fetchStocks = async (country: string, symbol: string, page: number) => {
     const {
       data,
@@ -43,18 +45,16 @@ const Stocks = () => {
       },
     });
     console.log(data);
-    console.log('page:', page);
 
     setStocks(data.data.stocks);
     setTotalPages(data.data.totalPages);
-    setPage(data.data.page);
     setDocumentsPerPage(data.data.documentsPerPage);
     return;
   };
 
-  const handlePageChange = async (page: number) => {
-    await fetchStocks(countryFilter, symbolFilter, page);
-    setPage(page);
+  const handlePageChange = async (newPage: number) => {
+    await fetchStocks(countryFilter, symbolFilter, newPage);
+    setPage(newPage);
   };
 
   const handleCountryChange = (e: React.BaseSyntheticEvent) => {
@@ -132,10 +132,13 @@ const Stocks = () => {
               isCompact
               showControls
               showShadow
-              classNames={{ cursor: 'shadow-lg' }}
+              classNames={{
+                cursor: 'shadow-lg',
+                base: 'h-[72px] flex items-center',
+              }}
               color="primary"
-              page={page ? firstPage : page}
               total={totalPages}
+              page={page}
               onChange={handlePageChange}
             />
           </div>
