@@ -18,6 +18,7 @@ export default {
         background: 'var(--background)',
         foreground: 'var(--foreground)',
         'nav-pink': '#FF6EFD',
+        'nav-blue': '#6ED6FF',
         'audio-background': 'var(--foreground)',
       },
       backgroundImage: {

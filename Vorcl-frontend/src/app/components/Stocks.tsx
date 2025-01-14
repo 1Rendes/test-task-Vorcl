@@ -15,6 +15,7 @@ import {
   Input,
   getKeyValue,
 } from '@nextui-org/react';
+import toast from 'react-hot-toast';
 
 const serverUrl = 'http://localhost:3001';
 export const instance = axios.create({
@@ -30,26 +31,36 @@ const Stocks = () => {
   const [countryFilter, setCountryFilter] = useState('');
   const [symbolFilter, setSymbolFilter] = useState('');
 
-  // console.log('page:', page);
-
   const fetchStocks = async (country: string, symbol: string, page: number) => {
-    const {
-      data,
-    }: {
-      data: Response;
-    } = await instance.get('/stock', {
-      params: {
-        country,
-        symbol,
-        page: page || 1,
-      },
-    });
-    console.log(data);
+    try {
+      const {
+        data,
+      }: {
+        data: Response;
+      } = await instance.get('/stock', {
+        params: {
+          country,
+          symbol,
+          page: page || 1,
+        },
+      });
+      console.log(data);
 
-    setStocks(data.data.stocks);
-    setTotalPages(data.data.totalPages);
-    setDocumentsPerPage(data.data.documentsPerPage);
-    return;
+      setStocks(data.data.stocks);
+      setTotalPages(data.data.totalPages);
+      setDocumentsPerPage(data.data.documentsPerPage);
+      return;
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 429) {
+          toast.error('API-requests limit exceeded, try in one minute again.');
+        } else {
+          toast.error(error.response?.data?.message || 'An error occurred');
+        }
+      } else {
+        console.error('Unknown error:', error);
+      }
+    }
   };
 
   const handlePageChange = async (newPage: number) => {
@@ -92,8 +103,8 @@ const Stocks = () => {
     { name: 'Name', uid: 'name' },
     { name: 'Capitalization', uid: 'marketCap' },
     { name: 'Price', uid: 'price' },
-    { name: 'Price change per day', uid: 'perDay' },
-    { name: 'Price change per month', uid: 'perMonth' },
+    { name: 'Price change per day', uid: 'percentPerDay' },
+    { name: 'Price change per month', uid: 'percentPerMonth' },
   ];
   let stockId = 0;
   let stockIndex = 0;
@@ -161,11 +172,27 @@ const Stocks = () => {
             item.id = stockId;
             return (
               <TableRow key={item._id}>
-                {(columnKey) => (
-                  <TableCell className="text-center text-[14px]">
-                    {getKeyValue(item, columnKey)}
-                  </TableCell>
-                )}
+                {(columnKey) => {
+                  const cellValue = getKeyValue(item, columnKey);
+                  if (
+                    columnKey === 'percentPerDay' ||
+                    columnKey === 'percentPerMonth'
+                  ) {
+                    return (
+                      <TableCell
+                        className={`text-center text-[14px] ${cellValue >= 0 ? 'text-green-500' : 'text-red-500'}`}
+                      >
+                        {cellValue + '%'}
+                      </TableCell>
+                    );
+                  } else {
+                    return (
+                      <TableCell className="text-center text-[14px]">
+                        {cellValue}
+                      </TableCell>
+                    );
+                  }
+                }}
               </TableRow>
             );
           }}

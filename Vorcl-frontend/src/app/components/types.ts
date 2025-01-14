@@ -5,6 +5,9 @@ export type Stock = {
   symbol: string;
   name: string;
   marketCap: number;
+  price: number;
+  percentPerDay: number;
+  percentPerMonth: number;
   country: string;
   updatedAt: string;
   createdAt: string;
