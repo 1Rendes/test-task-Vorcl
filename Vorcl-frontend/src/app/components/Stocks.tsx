@@ -27,6 +27,7 @@ const Stocks = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [page, setPage] = useState(1);
   const firstPage = 1;
+  const pauseBeforeRequestInMs = 1000;
   const [documentsPerPage, setDocumentsPerPage] = useState(0);
   const [countryFilter, setCountryFilter] = useState('');
   const [symbolFilter, setSymbolFilter] = useState('');
@@ -77,13 +78,13 @@ const Stocks = () => {
   const debouncedFiltersChange = useDebounce((e: React.BaseSyntheticEvent) => {
     setPage(firstPage);
     if (e.target.name === 'country') {
-      setCountryFilter(e.target.value);
+      setCountryFilter(e.target.value.trim());
       fetchStocks(e.target.value, symbolFilter, firstPage);
     } else {
-      setSymbolFilter(e.target.value);
+      setSymbolFilter(e.target.value.trim());
       fetchStocks(countryFilter, e.target.value, firstPage);
     }
-  }, 1000);
+  }, pauseBeforeRequestInMs);
 
   useEffect(() => {
     fetchStocks(countryFilter, symbolFilter, firstPage);
@@ -149,6 +150,7 @@ const Stocks = () => {
               }}
               color="primary"
               total={totalPages}
+              initialPage={firstPage}
               page={page}
               onChange={handlePageChange}
             />
