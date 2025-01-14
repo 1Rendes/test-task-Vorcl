@@ -1,4 +1,4 @@
-import { usersController } from "../constrollers/users.js";
+import usersController from "../constrollers/users.js";
 import userSchema from "../validation/users.js";
 
 const form = async (fastify) => {

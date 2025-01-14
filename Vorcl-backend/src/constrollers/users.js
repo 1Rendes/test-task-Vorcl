@@ -1,6 +1,6 @@
 import { registerUser } from "../services/mongo.js";
 
-export const usersController = async (req, reply) => {
+const usersController = async (req, reply) => {
   const { email } = req.body;
   if (!email) reply.status(201).send("Email is required.");
   try {
@@ -14,3 +14,5 @@ export const usersController = async (req, reply) => {
     reply.status(status).send({ status, message });
   }
 };
+
+export default usersController;
