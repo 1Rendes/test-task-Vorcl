@@ -1,8 +1,7 @@
 'use client';
 
 import { ErrorMessage, Field, FieldInputProps, Form, Formik } from 'formik';
-import { Button } from '@nextui-org/button';
-import { Input } from '@nextui-org/input';
+import { Button, Input } from '@nextui-org/react';
 import React from 'react';
 import * as Yup from 'yup';
 import axios from 'axios';
